@@ -1,0 +1,30 @@
+html:not(.js) .oxy-fg-responsive-image picture[data-lazy] {
+  display: none;
+}
+
+html.js .oxy-fg-responsive-image {
+  position: relative;
+  overflow: hidden;
+}
+
+html.js .oxy-fg-responsive-image figure {
+  position: relative;
+  display: block;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+html.js .oxy-fg-responsive-image picture {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.oxy-fg-responsive-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}

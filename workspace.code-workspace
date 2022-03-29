@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "/Users/fgroh/Kniff Dropbox/KNIFF/KNIFF LOCAL WEBSITES/oxygenstarterfont/app/public"
+		}
+	],
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"type": "firefox",
+				"request": "launch",
+				"name": "Listen for JS",
+				"url": "http://oxygenstarterfont.local",
+				"webRoot": "/Users/fgroh/Kniff Dropbox/KNIFF/KNIFF LOCAL WEBSITES/oxygenstarterfont/app/public"
+			},
+			{
+				"name": "Listen for XDebug",
+				"type": "php",
+				"request": "launch",
+				"port": 9000
+			}
+		]
+	}
+}
