@@ -7,7 +7,7 @@ Author URI: https://kniff.at
 GitHub Plugin URI: flowgrow/oxygen-helpers
 Primary Branch: main
 Description: Adding custom elements and functionality to Oxygen.
-Version: 1.0
+Version: 1.0.1
 */
 
 add_action('plugins_loaded', 'my_oxygen_elements_init');
