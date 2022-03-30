@@ -1,3 +1,9 @@
+.oxy-fg-video {
+  position: relative;
+  overflow: hidden;
+  min-height: 10px;
+}
+
 .oxy-fg-video video {
   display: block;
   width: 100%;
