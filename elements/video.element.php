@@ -45,8 +45,7 @@ class VideoElement extends OxyEl
 
   function icon()
   {
-    $base = plugin_dir_url(__DIR__ . "../");
-    return $base . '/icons/lottie.svg';
+    return CT_FW_URI . '/toolbar/UI/oxygen-icons/add-icons/image.svg';
   }
 
   function render($options, $defaults, $content)
