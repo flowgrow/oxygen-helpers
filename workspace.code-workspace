@@ -18,11 +18,17 @@
 				"webRoot": "/Users/fgroh/Kniff Dropbox/KNIFF/KNIFF LOCAL WEBSITES/oxygenstarterfont/app/public"
 			},
 			{
-				"name": "Listen for XDebug",
+				"name": "Listen for Xdebug (Local)",
 				"type": "php",
 				"request": "launch",
-				"port": 9000
-			}
+				"port": 9000,
+				"xdebugSettings": {
+					"max_children": 128,
+					"max_data": 1024,
+					"max_depth": 3,
+					"show_hidden": 1
+				}
+			},
 		]
 	}
 }
