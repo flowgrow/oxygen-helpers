@@ -530,7 +530,10 @@ class ResponsiveImageElement extends OxyElOverride
     // https://stackoverflow.com/a/66277441
     $component = (fn () => $this->component)->call($this->El);
     $image = $this->get_image_array_from_id($options['fg_attachment_id']);
-    $lazy = !filter_var($options['fg_eager'], FILTER_VALIDATE_BOOLEAN);
+    $lazy = filter_var($options['fg_lazy'], FILTER_VALIDATE_BOOLEAN);
+
+    if ($lazy) kniff_enqueue_script('lazyload', $base . 'js/' . 'lazyload.min.js');
+
     if (isset($_GET['action'])) {
       $lazy = false; // INSIDE BUILDER
       // somehow it doesn't render the customCSS() output, so we have to get it ourselves...
@@ -755,8 +758,9 @@ class ResponsiveImageElement extends OxyElOverride
     $lazy_load_control = $this->addOptionControl(
       array(
         "type" => 'checkbox',
-        "name" => 'Load Eagerly',
-        "slug" => 'fg_eager'
+        "name" => 'Lazyload',
+        "slug" => 'fg_lazy',
+        "value" => 'true'
       )
     );
     $lazy_load_control->setDefaultValue(false);
