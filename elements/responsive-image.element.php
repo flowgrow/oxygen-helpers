@@ -521,11 +521,8 @@ class ResponsiveImageElement extends OxyElOverride
 
     kniff_enqueue_script('gsap', 'https://unpkg.co/gsap@3/dist/gsap.min.js');
 
-    $id = basename(__FILE__, '.php');
     $base = plugin_dir_url(__DIR__ . "../");
-    //kniff_enqueue_style($id, $base . 'elements/' . $id . '.css');
-    kniff_enqueue_script($id, $base . 'js/' . 'lazyload.min.js');
-
+    
     // get protected component value from $this->El
     // https://stackoverflow.com/a/66277441
     $component = (fn () => $this->component)->call($this->El);
@@ -702,6 +699,7 @@ class ResponsiveImageElement extends OxyElOverride
       )
     );
     $obj_position_control->setValue('center center');
+    $obj_position_control->rebuildElementOnChange();
 
     $sizes_control = $this->addOptionControl(
       array(
