@@ -24,7 +24,7 @@ class VideoElement extends OxyEl
         }
       }, true)
     </script>
-  <?php }
+<?php }
 
   function afterInit()
   {
@@ -48,6 +48,30 @@ class VideoElement extends OxyEl
     return CT_FW_URI . '/toolbar/UI/oxygen-icons/add-icons/video.svg';
   }
 
+  function customCSS($options, $selector)
+  {
+    $obj_fit = $options["oxy-fg-video_fg_obj_size"];
+    $obj_position = $options["oxy-fg-video_fg_obj_position"];
+    if ($obj_fit == "cover" || $obj_fit == "contain") {
+      return "$selector video {" .
+        "object-fit: $obj_fit;" .
+        "object-position: $obj_position;" .
+        "position: absolute;" .
+        "top: 0;" .
+        "left: 0;" .
+        "width: 100%;" .
+        "height: 100%;" .
+        "}";
+    } else {
+      return "$selector video {" .
+        "object-fit: initial;" .
+        "position: static;" .
+        "width: 100%;" .
+        "height: auto;" .
+        "}";
+    }
+  }
+
   function render($options, $defaults, $content)
   {
     $mime = explode('/', get_post_mime_type($options['fg_attachment_id']))[0];
@@ -56,18 +80,35 @@ class VideoElement extends OxyEl
       $mime == 'video'
     ) {
       $url = wp_get_attachment_url($options['fg_attachment_id']);
-      
-      $loop = filter_var($options['fg_loop'], FILTER_VALIDATE_BOOLEAN) ? 'loop' : "";
-      $controls = filter_var($options['fg_controls'], FILTER_VALIDATE_BOOLEAN) ? "controls" : "";
-      $autoplay = filter_var($options['fg_autoplay'], FILTER_VALIDATE_BOOLEAN) ? "autoplay" : "";
-      $muted = filter_var($options['fg_muted'], FILTER_VALIDATE_BOOLEAN) ? "muted" : "";
-      $inline = filter_var($options['fg_inline'], FILTER_VALIDATE_BOOLEAN) ? "playsinline" : "";
-      if ($options['fg_poster'] != "") {
-        $poster = 'poster="'.$options['fg_poster'].'"';
-      }
-      
-      $html = "<video src='$url' $loop $controls $autoplay $muted $inline $poster></video>";
+      $meta = wp_get_attachment_metadata($options['fg_attachment_id']);
 
+      $width = isset($meta['width']) ? "width='{$meta['width']}'" : '';
+      $height = isset($meta['height']) ? "height='{$meta['height']}'" : '';
+
+      $loop = filter_var($options['fg_loop'], FILTER_VALIDATE_BOOLEAN) ? 'loop' : "";
+      $trigger = $options['fg_trigger'];
+      $muted = ($trigger == "autoplay" || filter_var($options['fg_muted'], FILTER_VALIDATE_BOOLEAN)) ? "muted" : "";
+      $inline = ($trigger == "autoplay" || !filter_var($options['fg_mobile_full'], FILTER_VALIDATE_BOOLEAN)) ? "playsinline" : "";
+      if ($options['fg_poster'] != "") {
+        $poster = 'poster="' . $options['fg_poster'] . '"';
+      }
+
+      $html = "<video src='$url' $width $height $loop $trigger $muted $inline $poster></video>";
+      
+      // lazy only if not in builder
+      $lazy = filter_var($options['fg_lazy'], FILTER_VALIDATE_BOOLEAN) && !isset($_GET['action']);
+
+      if ($lazy) {
+        $base = plugin_dir_url(__DIR__ . "../");
+        kniff_enqueue_script('lazyload', $base . 'js/' . 'lazyload.min.js');
+        $html = str_replace('src', 'data-src', $html);
+        $html = str_replace('poster', 'data-poster', $html);
+        $html = str_replace('<video', '<video class="lazy"', $html);
+      }
+
+      $html = str_replace(' >', '>', $html);
+      // replace multiple spaces with one
+      $html = preg_replace('!\s+!', ' ', $html);
     } else {
       $url = $this->icon();
       $html = kniff_file_get_contents($url);
@@ -89,15 +130,16 @@ class VideoElement extends OxyEl
     );
     $media_control->options['attachment'] = true;
     $media_control->rebuildElementOnChange();
-
+    
     $poster = $this->addOptionControl(
       array(
         "type" => 'mediaurl', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
-        "name" => 'Select Poster Image',
+        "name" => 'Select Preview Image',
         "slug" => "fg_poster",
       )
     );
     $poster->rebuildElementOnChange();
+
 
     $width = $this->addStyleControl(
       array(
@@ -117,45 +159,14 @@ class VideoElement extends OxyEl
       )
     );
 
-    $autoplay = $this->addOptionControl(
+    $eager_load_control = $this->addOptionControl(
       array(
-        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
-        "name" => 'Autoplay Video',
-        "slug" => "fg_autoplay",
-        "value" => 'true'
+        "type" => 'checkbox',
+        "name" => 'Lazyload',
+        "value" => 'true',
+        "slug" => 'fg_lazy',
       )
     );
-    $autoplay->rebuildElementOnChange();
-
-    $muted = $this->addOptionControl(
-      array(
-        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
-        "name" => 'Mute sound',
-        "slug" => "fg_muted",
-        "value" => 'true'
-      )
-    );
-    $muted->rebuildElementOnChange();
-
-    $inline = $this->addOptionControl(
-      array(
-        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
-        "name" => 'Inline Video',
-        "slug" => "fg_inline",
-        "value" => 'true'
-      )
-    );
-    $inline->rebuildElementOnChange();
-
-    $controls = $this->addOptionControl(
-      array(
-        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
-        "name" => 'Show controls',
-        "slug" => "fg_controls",
-        "value" => 'false'
-      )
-    );
-    $controls->rebuildElementOnChange();
 
     $loop = $this->addOptionControl(
       array(
@@ -166,6 +177,65 @@ class VideoElement extends OxyEl
       )
     );
     $loop->rebuildElementOnChange();
+
+    $obj_size_control = $this->addOptionControl(
+      array(
+        "type" => 'buttons-list',
+        "name" => 'Video Fit',
+        "slug" => 'fg_obj_size',
+        "value" => array(
+          'none' => 'Auto',
+          'contain' => 'Contain',
+          'cover' => 'Cover'
+        ),
+        "default" => 'none',
+      )
+    )->rebuildElementOnChange();
+
+    $obj_position_control = $this->addOptionControl(
+      array(
+        "type" => 'textfield',
+        "name" => 'Object Position',
+        "slug" => 'fg_obj_position',
+        "condition" => "fg_obj_size!=none"
+      )
+    );
+    $obj_position_control->setValue('center center');
+    $obj_position_control->rebuildElementOnChange();
+    
+    $trigger = $this->addOptionControl(
+      array(
+        "type" => 'buttons-list',
+        "name" => 'Video Start',
+        "slug" => 'fg_trigger',
+        "value" => array(
+          'autoplay' => 'Autoplay',
+          'controls' => 'Play Button',
+        ),
+        "default" => 'autoplay',
+      )
+    )->rebuildElementOnChange();
+
+    $muted = $this->addOptionControl(
+      array(
+        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
+        "name" => 'Mute sound',
+        "slug" => "fg_muted",
+        "value" => 'true',
+        "condition" => 'fg_trigger=controls'
+      )
+    );
+    $muted->rebuildElementOnChange();
+
+    $inline = $this->addOptionControl(
+      array(
+        "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
+        "name" => 'Open Video Fullscreen on Mobile devices',
+        "slug" => "fg_mobile_full",
+        "value" => 'true',
+        "condition" => 'fg_trigger=controls'
+      )
+    );
   }
 
   function defaultCSS()
@@ -179,5 +249,3 @@ class VideoElement extends OxyEl
 }
 
 new VideoElement();
-
-
