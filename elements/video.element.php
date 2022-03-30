@@ -35,7 +35,7 @@ class VideoElement extends OxyEl
 
   function name()
   {
-    return 'Video Element';
+    return 'Self-Hosted Video';
   }
 
   function slug()
@@ -45,7 +45,7 @@ class VideoElement extends OxyEl
 
   function icon()
   {
-    return CT_FW_URI . '/toolbar/UI/oxygen-icons/add-icons/image.svg';
+    return CT_FW_URI . '/toolbar/UI/oxygen-icons/add-icons/video.svg';
   }
 
   function render($options, $defaults, $content)
