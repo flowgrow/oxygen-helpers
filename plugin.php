@@ -5,6 +5,7 @@ Plugin Name: Kniff Oxygen Helpers
 Author: Florian Groh
 Author URI: https://kniff.at
 GitHub Plugin URI: flowgrow/oxygen-helpers
+Primary Branch: main
 Description: Adding custom elements and functionality to Oxygen.
 Version: 1.0
 */
