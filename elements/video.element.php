@@ -159,15 +159,6 @@ class VideoElement extends OxyEl
       )
     );
 
-    $eager_load_control = $this->addOptionControl(
-      array(
-        "type" => 'checkbox',
-        "name" => 'Lazyload',
-        "value" => 'true',
-        "slug" => 'fg_lazy',
-      )
-    );
-
     $loop = $this->addOptionControl(
       array(
         "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
@@ -227,7 +218,18 @@ class VideoElement extends OxyEl
     );
     $muted->rebuildElementOnChange();
 
-    $inline = $this->addOptionControl(
+    $developerSection = $this->addControlSection("advanced_slug", __("Developer Settings"), "assets/icon.png", $this);
+
+    $lazy_load_control = $developerSection->addOptionControl(
+      array(
+        "type" => 'checkbox',
+        "name" => 'Lazyload',
+        "value" => 'true',
+        "slug" => 'fg_lazy',
+      )
+    );
+
+    $inline = $developerSection->addOptionControl(
       array(
         "type" => 'checkbox', // types: textfield, dropdown, checkbox, buttons-list, measurebox, slider-measurebox, colorpicker, icon_finder, mediaurl
         "name" => 'Open Video Fullscreen on Mobile devices',
