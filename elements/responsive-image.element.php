@@ -143,7 +143,7 @@ class ResponsiveImageElement extends OxyElOverride
   function afterInit()
   {
     // Do things after init, like remove apply params button and remove the add button.
-    // $this->removeApplyParamsButton();
+    $this->removeApplyParamsButton();
     // $this->removeAddButton();
   }
 
@@ -299,13 +299,22 @@ class ResponsiveImageElement extends OxyElOverride
     return $height_unit == '%' || $height_unit == 'vh';
   }
 
+  function remove_oxy_slug($options) {
+    $p = "oxy-fg-responsive-image_";
+    $replaced_options = [];
+    foreach ($options as $key => $value) {
+      $replaced_options[str_replace($p, '', $key)] = $value;
+    }
+    return $replaced_options;
+  }
+
   function get_sizes_attr_for_mediaquery($query_name, $image, $options, $new_id = true)
   {
     global $media_queries_list;
-    $p = "oxy-fg-responsive-image_";
+    $options = $this->remove_oxy_slug($options);
 
-    if ($options[$p . "fg_sizes"] == 'custom') {
-      return $options[$p . "fg_custom_sizes"];
+    if ($options["fg_sizes"] == 'custom') {
+      return $options["fg_custom_sizes"];
     }
 
     $container_width = floatval($options['width']);
@@ -332,7 +341,7 @@ class ResponsiveImageElement extends OxyElOverride
     /* Default sizes == ($obj_size == 'auto' || $obj_size == 'contain')*/
     $out = $query_and . ($wu_relative ? $container_width . "vw" : $container_width . $wu);
 
-    $obj_size = $options[$p . 'fg_obj_size'];
+    $obj_size = $options['fg_obj_size'];
     if ($obj_size == 'cover') {
 
       if ($container_height <= 0) return $out;
@@ -377,7 +386,6 @@ class ResponsiveImageElement extends OxyElOverride
 
   function get_picture_sources($oxy_states, $lazy = true)
   {
-    $p = "oxy-fg-responsive-image_";
     global $media_queries_list;
     $media = $oxy_states['media'];
     if ($media == null) $media = [];
@@ -393,10 +401,11 @@ class ResponsiveImageElement extends OxyElOverride
     ];
     $states = ['all' => $empty_state];
 
-    $options = $oxy_states['original'];
+    $options = $this->remove_oxy_slug($oxy_states['original']);
 
-    if ($options[$p . 'fg_img_select'] == "select") {
-      $id = $options[$p . 'fg_attachment_id'];
+
+    if ($options['fg_img_select'] == "id") {
+      $id = $options['fg_attachment_id'];
     } else {
       $id = get_post_thumbnail_id();
     }
@@ -409,7 +418,7 @@ class ResponsiveImageElement extends OxyElOverride
     $states['all']['srcset'] = $image['srcset'];
     $states['all']['src'] = $image['url'];
     $states['all']['alt'] = $image['alt'] !== '' ? $image['alt'] : $image['title'];
-    $states['all']['object-fit'] = $options[$p . 'fg_obj_size'];
+    $states['all']['object-fit'] = $options['fg_obj_size'];
     $states['all']['container-width'] = $options['width'];
     $states['all']['container-height'] = $options['height'];
 
@@ -425,10 +434,10 @@ class ResponsiveImageElement extends OxyElOverride
       }
     }
 
-    $has_custom_sizes = ($options[$p . "fg_sizes"] == 'custom');
+    $has_custom_sizes = ($options["fg_sizes"] == 'custom');
 
     if (
-      !filter_var($options[$p . 'fg_container_full_width'], FILTER_VALIDATE_BOOLEAN) &&
+      !filter_var($options['fg_container_full_width'], FILTER_VALIDATE_BOOLEAN) &&
       $this->is_width_unit_relative($options['width-unit']) &&
       !$has_custom_sizes
     ) {
@@ -439,33 +448,35 @@ class ResponsiveImageElement extends OxyElOverride
       $options['width-unit'] = 'px';
 
       $states['all']['sizes'][] = $this->get_sizes_attr_for_mediaquery('over-page-width', $image, $options);
-      if (!isset($media['page-width'])) {
-        $media = array_merge(['page-width' => [
-          'original' => [
-            'width' => $original_width,
-            'height' => $options['height'],
-            'width-unit' => $original_unit,
-            'height-unit' => $options['height-unit'],
-            $p . 'fg_obj_size' => $options[$p . 'fg_obj_size']
-          ]
-        ]], $media);
-      }
-    } else {
-      $states['all']['sizes'][] = $this->get_sizes_attr_for_mediaquery('none', $image, $options);
-    }
-
+      $options['width'] = $original_width;
+      $options['width-unit'] = $original_unit;
+      // if (!isset($media['page-width'])) {
+      //   $media = array_merge(['page-width' => [
+      //     'original' => [
+      //       'width' => $original_width,
+      //       'height' => $options['height'],
+      //       'width-unit' => $original_unit,
+      //       'height-unit' => $options['height-unit'],
+      //       'fg_obj_size' => $options['fg_obj_size']
+      //     ]
+      //   ]], $media);
+      // }
+    } 
+    
+    $states['all']['sizes'][] = $this->get_sizes_attr_for_mediaquery('none', $image, $options);
+    
     $states = array_merge($states, array_fill_keys(array_keys($media), $empty_state));
 
     $prev_query = 'all';
     foreach ($media as $query_name => $options) {
       $options = $options['original'];
-      if ($options[$p . 'fg_img_select'] == "select") {
-        $id = $options[$p . 'fg_attachment_id'];
+      if ($options['fg_img_select'] == "select") {
+        $id = $options['fg_attachment_id'];
       } else {
         $id = get_post_thumbnail_id();
       }
 
-      $get_new_sizes = !$has_custom_sizes && $options[$p . 'fg_obj_size'] != $states[$prev_query]['object-fit'];
+      $get_new_sizes = !$has_custom_sizes && $options['fg_obj_size'] != $states[$prev_query]['object-fit'];
       $get_new_sizes |= $options['width'] != $states[$prev_query]['container-width'];
 
       if (!$id) {
@@ -476,7 +487,7 @@ class ResponsiveImageElement extends OxyElOverride
         $states[$query_name]['height'] = $image['height'];
         $states[$query_name]['srcset'] = $image['srcset'];
         $states[$query_name]['src'] = $image['url'];
-        $states[$query_name]['object-fit'] = $options[$p . 'fg_obj_size'];
+        $states[$query_name]['object-fit'] = $options['fg_obj_size'];
         $states[$query_name]['container-width'] = $options['width'];
         $states[$query_name]['container-height'] = $options['height'];
 
@@ -651,6 +662,7 @@ class ResponsiveImageElement extends OxyElOverride
     );
     $img_control->options['attachment'] = true;
     $img_control->whitelist();
+    $img_control->rebuildElementOnChange();
 
     $width = $this->addStyleControl(
       array(
@@ -667,6 +679,7 @@ class ResponsiveImageElement extends OxyElOverride
         "type"       => "measurebox",
         "name"     => __("Height"),
         "property"   => "height",
+        "slug" => "fg_height",
         "unit" => "auto",
       )
     );
@@ -675,15 +688,13 @@ class ResponsiveImageElement extends OxyElOverride
       array(
         "type" => 'buttons-list',
         "name" => 'Image Fit',
-        "slug" => 'fg_obj_size'
-      )
-    );
-
-    $obj_size_control->setValue(
-      array(
-        'none' => 'Auto',
-        'contain' => 'Contain',
-        'cover' => 'Cover'
+        "slug" => 'fg_obj_size',
+        "value" => array(
+          'none' => 'Auto',
+          'contain' => 'Contain',
+          'cover' => 'Cover'
+        ),
+        "condition" => "fg_height!='auto'"
       )
     );
     $obj_size_control->whitelist();
@@ -701,46 +712,18 @@ class ResponsiveImageElement extends OxyElOverride
     $obj_position_control->setValue('center center');
     $obj_position_control->rebuildElementOnChange();
 
-    $sizes_control = $this->addOptionControl(
-      array(
-        "type" => 'buttons-list',
-        "name" => 'Sizes Attribute',
-        "slug" => 'fg_sizes'
-      )
-    );
-    $sizes_control->setValue(
-      array(
-        'auto' => 'Auto',
-        'custom' => 'Custom'
-      )
-    );
-
-    $custom_sizes_control = $this->addOptionControl(
-      array(
-        "type" => 'textfield',
-        "name" => 'Custom Sizes Attribute',
-        "slug" => 'fg_custom_sizes',
-        "condition" => "fg_sizes=custom"
-      )
-    );
-    $custom_sizes_control->setValue('100vw');
-
     $caption_control = $this->addOptionControl(
       array(
         "type" => 'buttons-list',
         "name" => 'Caption',
-        "slug" => 'fg_caption'
+        "slug" => 'fg_caption',
+        "value" => array(
+          'none' => 'None',
+          'from_attachment' => 'From Media Library',
+          'custom' => 'Custom'
+        )
       )
-    );
-
-    $caption_control->setValue(
-      array(
-        'none' => 'None',
-        'from_attachment' => 'From Media Library',
-        'custom' => 'Custom'
-      )
-    );
-    $caption_control->rebuildElementOnChange();
+    )->rebuildElementOnChange();
 
     $custom_caption = $this->addOptionControl(
       array(
@@ -749,11 +732,12 @@ class ResponsiveImageElement extends OxyElOverride
         "slug" => 'fg_custom_caption',
         "condition" => "fg_caption=custom"
       )
-    );
-    $custom_caption->rebuildElementOnChange();
+    )->rebuildElementOnChange();
     $custom_caption->whitelist();
 
-    $lazy_load_control = $this->addOptionControl(
+    $developerSection = $this->addControlSection("advanced_slug", __("Developer Settings"), "assets/icon.png", $this);
+
+    $lazy_load_control = $developerSection->addOptionControl(
       array(
         "type" => 'checkbox',
         "name" => 'Lazyload',
@@ -761,17 +745,37 @@ class ResponsiveImageElement extends OxyElOverride
         "value" => 'true'
       )
     );
-    $lazy_load_control->setDefaultValue(false);
+    
+    $sizes_control = $developerSection->addOptionControl(
+      array(
+        "type" => 'buttons-list',
+        "name" => 'Sizes Attribute',
+        "slug" => 'fg_sizes',
+        "value" => array(
+          'auto' => 'Auto',
+          'custom' => 'Custom'
+        )
+      )
+    )->rebuildElementOnChange();
+    
+    $custom_sizes_control = $developerSection->addOptionControl(
+      array(
+        "type" => 'textfield',
+        "name" => 'Custom Sizes Attribute',
+        "slug" => 'fg_custom_sizes',
+        "condition" => "fg_sizes=custom",
+        "value" => '100vw'
+      )
+    )->rebuildElementOnChange();
 
-
-    $full_width = $this->addOptionControl(
+    $full_width = $developerSection->addOptionControl(
       array(
         "type" => 'checkbox',
         "name" => 'Container is Full-Width',
-        "slug" => 'fg_container_full_width'
+        "slug" => 'fg_container_full_width',
+        "value" => "false"
       )
-    );
-    $full_width->setDefaultValue(false);
+    )->rebuildElementOnChange();
   }
 
   function defaultCSS()
