@@ -1,0 +1,21 @@
+:root {
+  --size: 100px
+}
+
+.oxy-fg-spacer {
+  display: block;
+  width: var(--size);
+  min-width: var(--size);
+  height: var(--size);
+  min-height: var(--size);
+}
+
+.oxy-fg-spacer.horizontal {
+  height: 1px;
+  min-height: 1px;
+}
+
+.oxy-fg-spacer.vertical {
+  width: 1px;
+  min-width: 1px;
+}
